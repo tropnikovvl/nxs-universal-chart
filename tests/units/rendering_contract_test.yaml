@@ -288,6 +288,12 @@ tests:
       - equal:
           path: spec.metrics[0].resource.target.averageUtilization
           value: 75
+      - equal:
+          path: spec.behavior.scaleDown.stabilizationWindowSeconds
+          value: 480
+      - equal:
+          path: spec.behavior.scaleUp.selectPolicy
+          value: Max
 
   - it: renders the PDB contract
     values:
