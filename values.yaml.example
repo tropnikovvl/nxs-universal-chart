@@ -151,6 +151,7 @@ deployments:
         syncWave: "10"
         syncOptions:
           - ServerSideApply=true
+    # Not rendered while hpas.api targets this Deployment: the HPA owns the replica count.
     replicas: 2
     extraSelectorLabels:
       component: api
@@ -363,6 +364,10 @@ cronJobs:
   cleanup:
     labels:
       component: housekeeping
+    jobLabels:
+      component: housekeeping
+    jobAnnotations:
+      owner: platform
     schedule: "*/30 * * * *"
     timeZone: UTC
     containers:

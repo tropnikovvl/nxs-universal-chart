@@ -1783,6 +1783,12 @@
             },
             "failedJobsHistoryLimit": {
               "type": "integer"
+            },
+            "jobLabels": {
+              "$ref": "#/definitions/stringMap"
+            },
+            "jobAnnotations": {
+              "$ref": "#/definitions/stringMap"
             }
           }
         }
@@ -1814,6 +1820,12 @@
             },
             "failedJobsHistoryLimit": {
               "type": "integer"
+            },
+            "jobLabels": {
+              "$ref": "#/definitions/stringMap"
+            },
+            "jobAnnotations": {
+              "$ref": "#/definitions/stringMap"
             }
           }
         }

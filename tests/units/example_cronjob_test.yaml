@@ -31,6 +31,12 @@ tests:
           path: spec.concurrencyPolicy
           value: Forbid
       - equal:
+          path: spec.jobTemplate.metadata.labels.component
+          value: housekeeping
+      - equal:
+          path: spec.jobTemplate.metadata.annotations.owner
+          value: platform
+      - equal:
           path: spec.jobTemplate.spec.template.metadata.labels["workload-tier"]
           value: backend
       - exists:
@@ -56,3 +62,55 @@ tests:
       - equal:
           path: spec.jobTemplate.spec.template.spec.containers[0].envFrom[1].secretRef.name
           value: universal-blue-secret-envs
+
+  - it: omits jobTemplate.metadata when jobLabels and jobAnnotations are unset
+    set:
+      gitops:
+        argo:
+          enabled: true
+          syncWave: "5"
+      cronJobs:
+        cleanup:
+          schedule: "*/30 * * * *"
+          labels:
+            component: housekeeping
+          annotations:
+            note: cronjob-only
+          containers:
+            - name: cleanup
+              image: busybox
+    asserts:
+      - isKind:
+          of: CronJob
+      - isNull:
+          path: spec.jobTemplate.metadata
+
+  - it: merges jobLabels and jobAnnotations from cronJobsGeneral and the entry
+    set:
+      cronJobsGeneral:
+        jobLabels:
+          team: platform
+          tier: batch
+        jobAnnotations:
+          source: general
+      cronJobs:
+        cleanup:
+          schedule: "*/30 * * * *"
+          jobLabels:
+            tier: '{{ .Release.Name }}'
+          jobAnnotations:
+            owner: billing
+          containers:
+            - name: cleanup
+              image: busybox
+    asserts:
+      - equal:
+          path: spec.jobTemplate.metadata.labels
+          value:
+            team: platform
+            tier: smoke-test
+      - equal:
+          path: spec.jobTemplate.metadata.annotations
+          value:
+            source: general
+            owner: billing

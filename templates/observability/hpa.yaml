@@ -5,6 +5,9 @@
 {{- if and (empty $hpa.targetCPU) (empty $hpa.targetMemory) (empty $hpa.metrics) -}}
 {{- fail (printf "HPA %q requires at least one metric via targetCPU, targetMemory, or metrics" $name) -}}
 {{- end }}
+{{- if and (not (empty $hpa.behavior)) (not (has $apiVersion (list "autoscaling/v2" "autoscaling/v2beta2"))) -}}
+{{- fail (printf "HPA %q sets behavior, which requires apiVersion autoscaling/v2 or autoscaling/v2beta2 (got %q)" $name $apiVersion) -}}
+{{- end }}
 ---
 apiVersion: {{ $apiVersion }}
 kind: HorizontalPodAutoscaler

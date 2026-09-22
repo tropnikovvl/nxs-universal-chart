@@ -63,3 +63,18 @@ tests:
           of: HorizontalPodAutoscaler
       - isNull:
           path: spec.behavior
+
+  - it: fails when behavior is set with an apiVersion that does not support it
+    set:
+      hpas:
+        api:
+          apiVersion: autoscaling/v1
+          scaleTargetRef:
+            name: api
+          targetCPU: 70
+          behavior:
+            scaleDown:
+              stabilizationWindowSeconds: 300
+    asserts:
+      - failedTemplate:
+          errorMessage: HPA "api" sets behavior, which requires apiVersion autoscaling/v2 or autoscaling/v2beta2 (got "autoscaling/v1")

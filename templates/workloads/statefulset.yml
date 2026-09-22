@@ -18,7 +18,7 @@ metadata:
   annotations:
     {{- include "helpers.app.annotations" (dict "context" $ "general" $general "value" $statefulSet) | nindent 4 }}
 spec:
-  {{- if hasKey $statefulSet "replicas" }}
+  {{- if and (hasKey $statefulSet "replicas") (ne "true" (include "helpers.workloads.hpaManaged" (dict "kind" "StatefulSet" "name" $name "context" $))) }}
   replicas: {{ $statefulSet.replicas }}
   {{- end }}
   {{- with $statefulSet.strategy }}

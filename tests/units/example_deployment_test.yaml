@@ -33,9 +33,9 @@ tests:
       - equal:
           path: metadata.annotations["argocd.argoproj.io/compare-options"]
           value: IgnoreExtraneous
-      - equal:
+      # hpas.api targets this Deployment, so replicas is left to the HPA
+      - notExists:
           path: spec.replicas
-          value: 2
       - equal:
           path: spec.selector.matchLabels.tenant
           value: shared
