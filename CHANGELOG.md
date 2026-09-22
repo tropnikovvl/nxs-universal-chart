@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.2.2] - September 21, 2026
+### Fixed
+* `Cronjob` template now renders `jobTemplate.metadata` for passed values
+
+
 ## [3.2.1] - August 20, 2026
 ### Fixed
 * `defaultImageTag` and container `imageTag` no longer fail schema validation when the value is numeric (e.g. a fully numeric `CI_COMMIT_SHORT_SHA`): both now accept string, number, and boolean values ([#127](https://github.com/nixys/nxs-universal-chart/issues/127))
