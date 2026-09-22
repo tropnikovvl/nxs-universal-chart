@@ -7,14 +7,13 @@ release:
   namespace: default
 
 tests:
-  - it: defaults Deployment replicas to 1 when unset
+  - it: omits Deployment replicas when unset
     template: templates/workloads/deployment.yml
     set:
       deployments.app.containers.main.image: nginx:1.27.5
     asserts:
-      - equal:
+      - notExists:
           path: spec.replicas
-          value: 1
 
   - it: renders the configured Deployment replicas
     template: templates/workloads/deployment.yml
@@ -36,14 +35,13 @@ tests:
           path: spec.replicas
           value: 0
 
-  - it: defaults StatefulSet replicas to 1 when unset
+  - it: omits StatefulSet replicas when unset
     template: templates/workloads/statefulset.yml
     set:
       statefulSets.app.containers.main.image: nginx:1.27.5
     asserts:
-      - equal:
+      - notExists:
           path: spec.replicas
-          value: 1
 
   - it: renders the configured StatefulSet replicas
     template: templates/workloads/statefulset.yml
@@ -64,3 +62,76 @@ tests:
       - equal:
           path: spec.replicas
           value: 0
+
+  - it: omits Deployment replicas when an HPA targets it, even if replicas is set
+    template: templates/workloads/deployment.yml
+    set:
+      deployments.app.replicas: 3
+      deployments.app.containers.main.image: nginx:1.27.5
+      hpas.app.scaleTargetRef.name: app
+      hpas.app.targetCPU: 70
+    asserts:
+      - notExists:
+          path: spec.replicas
+
+  - it: keeps Deployment replicas when the HPA targets another workload
+    template: templates/workloads/deployment.yml
+    set:
+      deployments.app.replicas: 3
+      deployments.app.containers.main.image: nginx:1.27.5
+      hpas.other.scaleTargetRef.name: other
+      hpas.other.targetCPU: 70
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: keeps Deployment replicas when the targeting HPA is disabled
+    template: templates/workloads/deployment.yml
+    set:
+      deployments.app.replicas: 3
+      deployments.app.containers.main.image: nginx:1.27.5
+      hpas.app.disabled: true
+      hpas.app.scaleTargetRef.name: app
+      hpas.app.targetCPU: 70
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: keeps Deployment replicas when the HPA targets a StatefulSet with the same name
+    template: templates/workloads/deployment.yml
+    set:
+      deployments.app.replicas: 3
+      deployments.app.containers.main.image: nginx:1.27.5
+      hpas.app.scaleTargetRef.name: app
+      hpas.app.scaleTargetRef.kind: StatefulSet
+      hpas.app.targetCPU: 70
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 3
+
+  - it: omits StatefulSet replicas when an HPA targets it, even if replicas is set
+    template: templates/workloads/statefulset.yml
+    set:
+      statefulSets.app.replicas: 2
+      statefulSets.app.containers.main.image: nginx:1.27.5
+      hpas.app.scaleTargetRef.name: app
+      hpas.app.scaleTargetRef.kind: StatefulSet
+      hpas.app.targetCPU: 70
+    asserts:
+      - notExists:
+          path: spec.replicas
+
+  - it: keeps StatefulSet replicas when the HPA targets a Deployment with the same name
+    template: templates/workloads/statefulset.yml
+    set:
+      statefulSets.app.replicas: 2
+      statefulSets.app.containers.main.image: nginx:1.27.5
+      hpas.app.scaleTargetRef.name: app
+      hpas.app.targetCPU: 70
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 2

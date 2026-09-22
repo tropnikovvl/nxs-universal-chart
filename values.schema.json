@@ -1284,6 +1284,9 @@
         "targetMemory": {},
         "metrics": {
           "$ref": "#/definitions/freeFormArray"
+        },
+        "behavior": {
+          "$ref": "#/definitions/freeFormObject"
         }
       }
     },
@@ -1780,6 +1783,12 @@
             },
             "failedJobsHistoryLimit": {
               "type": "integer"
+            },
+            "jobLabels": {
+              "$ref": "#/definitions/stringMap"
+            },
+            "jobAnnotations": {
+              "$ref": "#/definitions/stringMap"
             }
           }
         }
@@ -1811,6 +1820,12 @@
             },
             "failedJobsHistoryLimit": {
               "type": "integer"
+            },
+            "jobLabels": {
+              "$ref": "#/definitions/stringMap"
+            },
+            "jobAnnotations": {
+              "$ref": "#/definitions/stringMap"
             }
           }
         }

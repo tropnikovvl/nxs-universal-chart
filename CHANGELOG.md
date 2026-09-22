@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.2.2] - September 22, 2026
+### Added
+* `hpas.<name>.behavior` is passed through to Kubernetes HPA `spec.behavior` (scale-up/scale-down stabilization windows and policies). Omitted when unset. Rendering fails with a clear error when `behavior` is combined with an `apiVersion` other than `autoscaling/v2` or `autoscaling/v2beta2` ([#129](https://github.com/nixys/nxs-universal-chart/pull/129), by @amovergan and Peter Rukin)
+* `cronJobs.<name>.jobLabels` / `jobAnnotations` (and the same keys in `cronJobsGeneral`) render `spec.jobTemplate.metadata`, so Jobs created by a CronJob can carry their own labels and annotations. Per-CronJob keys override `cronJobsGeneral` keys. `jobTemplate.metadata` is omitted when both are empty, so existing manifests do not change ([#131](https://github.com/nixys/nxs-universal-chart/issues/131), [#132](https://github.com/nixys/nxs-universal-chart/pull/132), by @insidieux and Peter Rukin)
+
+### Fixed
+* Deployments and StatefulSets no longer render `spec.replicas` when `replicas` is unset. Previously the chart always rendered `replicas: 1`, and every `helm upgrade` reset the replica count managed by a HorizontalPodAutoscaler (or KEDA). Kubernetes still defaults such workloads to 1 replica. Explicit values, including `0`, are preserved ([#130](https://github.com/nixys/nxs-universal-chart/pull/130), by @movergan)
+
+### Changed
+* Deployments and StatefulSets targeted by an enabled `hpas.<name>` entry (matched by `scaleTargetRef.name` and `scaleTargetRef.kind`, default `Deployment`) never render `spec.replicas`, even when `replicas` is set, so the HPA keeps ownership of the replica count (by Peter Rukin)
+
+### Upgrade notes
+* For HPA-managed workloads, the first upgrade to this version removes `spec.replicas` from the manifest. With Helm's client-side three-way merge this deletes the field, and the API server defaults it to `1`, so the workload briefly scales down to 1 replica until the HPA scales it back up. This happens once (previously it happened on every upgrade). To avoid it, upgrade during low traffic or temporarily raise `hpas.<name>.minReplicas`
+* Workloads without an HPA that were scaled manually (for example with `kubectl scale`) and have no `replicas` value are no longer reset to 1 on upgrade. Set `replicas` explicitly if the chart should enforce the count
+
 ## [3.2.1] - August 20, 2026
 ### Fixed
 * `defaultImageTag` and container `imageTag` no longer fail schema validation when the value is numeric (e.g. a fully numeric `CI_COMMIT_SHORT_SHA`): both now accept string, number, and boolean values ([#127](https://github.com/nixys/nxs-universal-chart/issues/127))

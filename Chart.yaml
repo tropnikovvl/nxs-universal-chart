@@ -3,7 +3,7 @@ apiVersion: v2
 name: nxs-universal-chart
 description: Helm chart for rendering reusable Kubernetes application resources
 type: application
-version: 3.2.1
+version: 3.2.2
 appVersion: "v1"
 icon: https://registry.nixys.ru/logo.png
 home: https://github.com/nixys/nxs-universal-chart
@@ -24,10 +24,14 @@ annotations:
     - name: Source
       url: https://github.com/nixys/nxs-universal-chart
   artifacthub.io/changes: |
+    - kind: added
+      description: "HPA resources now render Kubernetes spec.behavior (scaleUp/scaleDown stabilization windows and policies) when hpas.<name>.behavior is set"
+    - kind: added
+      description: "CronJobs render spec.jobTemplate.metadata from cronJobs.<name>.jobLabels / jobAnnotations and cronJobsGeneral defaults"
     - kind: fixed
-      description: "defaultImageTag and container imageTag no longer fail values schema validation when the value is numeric (for example a fully numeric CI_COMMIT_SHORT_SHA): both now accept string, number and boolean values"
-    - kind: fixed
-      description: "Numeric image tags are rendered as plain strings instead of Go float notation (nginx:20250811 instead of nginx:2.0250811e+07)"
+      description: "Deployments and StatefulSets no longer render spec.replicas when replicas is unset, so Helm upgrades stop resetting the replica count managed by an autoscaler (explicit values, including 0, are preserved)"
+    - kind: changed
+      description: "Deployments and StatefulSets targeted by an enabled hpas entry never render spec.replicas, even when replicas is set"
   artifacthub.io/recommendations: |
     - url: https://nixys.io
     - url: https://github.com/nixys/nxs-universal-chart

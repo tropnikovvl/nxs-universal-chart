@@ -406,6 +406,24 @@ Resolve container image reference: `<image>:<tag>` with both parts coerced to st
 {{- if and $value (not ($value.disabled | default false)) -}}true{{- else -}}false{{- end -}}
 {{- end -}}
 
+{{/*
+Returns "true" when an enabled entry in .Values.hpas targets the given workload
+(scaleTargetRef.kind defaults to Deployment, matching templates/observability/hpa.yaml).
+*/}}
+{{- define "helpers.workloads.hpaManaged" -}}
+{{- $managed := false -}}
+{{- range $hpa := (.context.Values.hpas | default dict) -}}
+{{- if eq "true" (include "helpers.resources.isEnabled" (dict "value" $hpa)) -}}
+{{- with $hpa.scaleTargetRef -}}
+{{- if and (eq (toString .name) (toString $.name)) (eq (.kind | default "Deployment") $.kind) -}}
+{{- $managed = true -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- $managed -}}
+{{- end -}}
+
 {{- define "helpers.statefulsets.governingServiceName" -}}
 {{- $serviceName := .statefulSet.serviceName | default .name -}}
 {{- include "helpers.app.fullname" (dict "name" $serviceName "context" .context) -}}

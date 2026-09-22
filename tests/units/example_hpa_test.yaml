@@ -39,3 +39,42 @@ tests:
       - equal:
           path: spec.metrics[0].resource.target.averageUtilization
           value: 70
+      - equal:
+          path: spec.behavior.scaleDown.stabilizationWindowSeconds
+          value: 300
+      - equal:
+          path: spec.behavior.scaleUp.selectPolicy
+          value: Max
+
+  - it: omits spec.behavior when the values key is unset
+    set:
+      hpas:
+        api:
+          scaleTargetRef:
+            name: api
+          minReplicas: 2
+          maxReplicas: 4
+          targetCPU: 70
+    documentSelector:
+      path: metadata.name
+      value: smoke-test-api
+    asserts:
+      - isKind:
+          of: HorizontalPodAutoscaler
+      - isNull:
+          path: spec.behavior
+
+  - it: fails when behavior is set with an apiVersion that does not support it
+    set:
+      hpas:
+        api:
+          apiVersion: autoscaling/v1
+          scaleTargetRef:
+            name: api
+          targetCPU: 70
+          behavior:
+            scaleDown:
+              stabilizationWindowSeconds: 300
+    asserts:
+      - failedTemplate:
+          errorMessage: HPA "api" sets behavior, which requires apiVersion autoscaling/v2 or autoscaling/v2beta2 (got "autoscaling/v1")

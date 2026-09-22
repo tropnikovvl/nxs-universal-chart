@@ -255,7 +255,7 @@ Schema matching note:
 | `statefulSets` | `statefulSets.worker.serviceName: headless` | `{}` | StatefulSet resources keyed by suffix. |
 | `jobsGeneral` | `jobsGeneral.backoffLimit: 1` | `{}` | Shared defaults applied to one-shot Jobs. Supports all [Common Workload Entry Fields](#common-workload-entry-fields) plus `parallelism`, `completions`, `activeDeadlineSeconds`, `backoffLimit`, `ttlSecondsAfterFinished`, `restartPolicy`, `commandDurationAlert`, `commandDurationAlertNamespace`. |
 | `jobs` | `jobs.migrate.containers.migrate.image: busybox` | `{}` | One-shot batch jobs keyed by suffix, or one raw templated YAML string. |
-| `cronJobsGeneral` | `cronJobsGeneral.suspend: true` | `{}` | Shared defaults applied to all CronJobs. Supports all [Common Workload Entry Fields](#common-workload-entry-fields) and all jobsGeneral fields plus `suspend`, `timeZone`, `singleOnly`, `startingDeadlineSeconds`, `successfulJobsHistoryLimit`, `failedJobsHistoryLimit`. See [cronJobsGeneral](#cronJobsGeneral) for details. |
+| `cronJobsGeneral` | `cronJobsGeneral.suspend: true` | `{}` | Shared defaults applied to all CronJobs. Supports all [Common Workload Entry Fields](#common-workload-entry-fields) and all jobsGeneral fields plus `suspend`, `timeZone`, `singleOnly`, `startingDeadlineSeconds`, `successfulJobsHistoryLimit`, `failedJobsHistoryLimit`, `jobLabels`, `jobAnnotations`. See [cronJobsGeneral](#cronJobsGeneral) for details. |
 | `cronJobs` | `cronJobs.cleanup.schedule: "*/30 * * * *"` | `{}` | CronJobs keyed by suffix, or one raw templated YAML string. |
 | `hooksGeneral` | `hooksGeneral.backoffLimit: 1` | `{}` | Shared defaults for Helm hook jobs. Supports all jobsGeneral fields plus `kind`, `weight`, `deletePolicy`. |
 | `hooks` | `hooks.predeploy.kind: pre-install` | `{}` | Helm hook jobs keyed by suffix, or one raw templated YAML string. |
@@ -323,7 +323,7 @@ These tables list only fields that are unique to a workload family. Shared knobs
 
 | Field | Example | Default | Description |
 |---|---|---|---|
-| `deployments.<name>.replicas` | `replicas: 3` | `1` | Number of desired deployment replicas. |
+| `deployments.<name>.replicas` | `replicas: 3` | Kubernetes default (`1`) | Number of desired deployment replicas. The field is omitted when unset, and also when an enabled `hpas.<name>` entry targets this Deployment (`scaleTargetRef.kind: Deployment`), so the HPA keeps ownership of the replica count across Helm upgrades. |
 | `deployments.<name>.strategy` | `strategy.rollingUpdate.maxUnavailable: 1` | `n/a` | Deployment strategy block. |
 | `deployments.<name>.progressDeadlineSeconds` | `progressDeadlineSeconds: 600` | `600` | Rollout progress deadline in seconds. |
 
@@ -345,7 +345,7 @@ These tables list only fields that are unique to a workload family. Shared knobs
 
 | Field | Example | Default | Description |
 |---|---|---|---|
-| `statefulSets.<name>.replicas` | `replicas: 2` | `1` | Number of desired StatefulSet replicas. |
+| `statefulSets.<name>.replicas` | `replicas: 2` | Kubernetes default (`1`) | Number of desired StatefulSet replicas. The field is omitted when unset, and also when an enabled `hpas.<name>` entry targets this StatefulSet (`scaleTargetRef.kind: StatefulSet`), so the HPA keeps ownership of the replica count across Helm upgrades. |
 | `statefulSets.<name>.strategy` | `strategy.type: RollingUpdate` | `n/a` | StatefulSet update strategy. |
 | `statefulSets.<name>.serviceName` | `serviceName: headless` | `<resource key>` | Governing service name used by StatefulSet. |
 | `statefulSets.<name>.minReadySeconds` | `minReadySeconds: 10` | `n/a` | Minimum ready time per pod. |
@@ -375,6 +375,7 @@ These tables list only fields that are unique to a workload family. Shared knobs
 | `cronJobs.<name>.startingDeadlineSeconds` | `startingDeadlineSeconds: 120` | `n/a` | Late start deadline for missed runs. |
 | `cronJobs.<name>.successfulJobsHistoryLimit` | `successfulJobsHistoryLimit: 3` | `n/a` | Number of successful jobs to retain. |
 | `cronJobs.<name>.failedJobsHistoryLimit` | `failedJobsHistoryLimit: 1` | `n/a` | Number of failed jobs to retain. |
+| `cronJobs.<name>.jobLabels` / `jobAnnotations` | `jobLabels.team: billing` | `n/a` | Metadata for the Jobs created by the CronJob (`spec.jobTemplate.metadata`). Merged over `cronJobsGeneral` values; `jobTemplate.metadata` is omitted when both are empty. |
 
 #### Hooks
 
@@ -462,6 +463,7 @@ All [Common Workload Entry Fields](#common-workload-entry-fields) and all [jobsG
 | `cronJobsGeneral.startingDeadlineSeconds` | `startingDeadlineSeconds: 120` | `n/a` | Default late-start deadline for missed runs. |
 | `cronJobsGeneral.successfulJobsHistoryLimit` | `successfulJobsHistoryLimit: 3` | `n/a` | Default number of successful job runs to retain. |
 | `cronJobsGeneral.failedJobsHistoryLimit` | `failedJobsHistoryLimit: 1` | `n/a` | Default number of failed job runs to retain. |
+| `cronJobsGeneral.jobLabels` / `jobAnnotations` | `jobLabels.team: billing` | `n/a` | Default labels/annotations for Jobs created by all CronJobs (`spec.jobTemplate.metadata`). Per-CronJob keys override matching keys. |
 
 Example - set default resources, environment sources, and schedule controls for all CronJobs:
 
@@ -624,10 +626,11 @@ All [Common Workload Entry Fields](#common-workload-entry-fields) and all [jobsG
 | `hpas.<name>.apiVersion` | `apiVersion: autoscaling/v2` | `"autoscaling/v2"` | API version used for HPA resource. |
 | `hpas.<name>.labels` / `annotations` | `labels.autoscaling: enabled` | `{}` | Extra metadata for HPA resource. |
 | `hpas.<name>.gitops` | `gitops.flux.enabled: true` | `{}` | Resource-level GitOps metadata overlay. |
-| `hpas.<name>.scaleTargetRef` | `scaleTargetRef: {name: api, kind: Deployment}` | `required` | Target object for scaling. |
+| `hpas.<name>.scaleTargetRef` | `scaleTargetRef: {name: api, kind: Deployment}` | `required` | Target object for scaling. When it points to a Deployment or StatefulSet of this release, that workload does not render `spec.replicas`, even if `replicas` is set. |
 | `hpas.<name>.minReplicas` / `maxReplicas` | `minReplicas: 2`, `maxReplicas: 6` | `2` / `3` | Replica bounds for autoscaling. |
 | `hpas.<name>.targetCPU` / `targetMemory` | `targetCPU: 70` | `n/a` | Convenience CPU/memory utilization targets. |
 | `hpas.<name>.metrics` | `metrics: [{type: Pods, ...}]` | `n/a` | Custom metrics list; can be used with or without shortcuts. |
+| `hpas.<name>.behavior` | `behavior.scaleDown.stabilizationWindowSeconds: 300` | `n/a` | Optional Kubernetes HPA `spec.behavior` (scaleUp/scaleDown windows and policies). Omitted when unset. |
 
 ### Dependency Toggle Fields
 

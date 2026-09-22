@@ -37,6 +37,12 @@
   {{- else -}}
     {{- $singleOnly = false -}}
   {{- end -}}
+{{- end -}}
+{{- $jobLabels := dict -}}
+{{- $jobAnnotations := dict -}}
+{{- range $source := list $general $job -}}
+  {{- with (get $source "jobLabels") }}{{- $jobLabels = mergeOverwrite $jobLabels ((fromYaml (include "helpers.tplvalues.render" (dict "value" . "context" $))) | default dict) -}}{{- end -}}
+  {{- with (get $source "jobAnnotations") }}{{- $jobAnnotations = mergeOverwrite $jobAnnotations ((fromYaml (include "helpers.tplvalues.render" (dict "value" . "context" $))) | default dict) -}}{{- end -}}
 {{- end }}
 ---
 apiVersion: {{ include "helpers.capabilities.cronJob.apiVersion" $ }}
@@ -72,6 +78,17 @@ spec:
   failedJobsHistoryLimit: {{ . }}
   {{- end }}
   jobTemplate:
+    {{- if or $jobLabels $jobAnnotations }}
+    metadata:
+      {{- with $jobLabels }}
+      labels:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $jobAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
     spec:
       {{- with (coalesce $job.parallelism $general.parallelism) }}
       parallelism: {{ . }}
