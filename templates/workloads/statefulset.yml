@@ -18,7 +18,9 @@ metadata:
   annotations:
     {{- include "helpers.app.annotations" (dict "context" $ "general" $general "value" $statefulSet) | nindent 4 }}
 spec:
-  replicas: {{ hasKey $statefulSet "replicas" | ternary $statefulSet.replicas 1 }}
+  {{- if hasKey $statefulSet "replicas" }}
+  replicas: {{ $statefulSet.replicas }}
+  {{- end }}
   {{- with $statefulSet.strategy }}
   strategy: {{- include "helpers.tplvalues.render" (dict "value" . "context" $) | nindent 4 }}
   {{- end }}

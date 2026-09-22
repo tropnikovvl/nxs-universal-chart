@@ -323,7 +323,7 @@ These tables list only fields that are unique to a workload family. Shared knobs
 
 | Field | Example | Default | Description |
 |---|---|---|---|
-| `deployments.<name>.replicas` | `replicas: 3` | `1` | Number of desired deployment replicas. |
+| `deployments.<name>.replicas` | `replicas: 3` | Kubernetes default (`1`) | Number of desired deployment replicas. The field is omitted when unset so an HPA can manage it without Helm resetting the replica count. |
 | `deployments.<name>.strategy` | `strategy.rollingUpdate.maxUnavailable: 1` | `n/a` | Deployment strategy block. |
 | `deployments.<name>.progressDeadlineSeconds` | `progressDeadlineSeconds: 600` | `600` | Rollout progress deadline in seconds. |
 
@@ -345,7 +345,7 @@ These tables list only fields that are unique to a workload family. Shared knobs
 
 | Field | Example | Default | Description |
 |---|---|---|---|
-| `statefulSets.<name>.replicas` | `replicas: 2` | `1` | Number of desired StatefulSet replicas. |
+| `statefulSets.<name>.replicas` | `replicas: 2` | Kubernetes default (`1`) | Number of desired StatefulSet replicas. The field is omitted when unset so an HPA can manage it without Helm resetting the replica count. |
 | `statefulSets.<name>.strategy` | `strategy.type: RollingUpdate` | `n/a` | StatefulSet update strategy. |
 | `statefulSets.<name>.serviceName` | `serviceName: headless` | `<resource key>` | Governing service name used by StatefulSet. |
 | `statefulSets.<name>.minReadySeconds` | `minReadySeconds: 10` | `n/a` | Minimum ready time per pod. |

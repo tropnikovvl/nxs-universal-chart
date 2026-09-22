@@ -7,14 +7,13 @@ release:
   namespace: default
 
 tests:
-  - it: defaults Deployment replicas to 1 when unset
+  - it: omits Deployment replicas when unset
     template: templates/workloads/deployment.yml
     set:
       deployments.app.containers.main.image: nginx:1.27.5
     asserts:
-      - equal:
+      - notExists:
           path: spec.replicas
-          value: 1
 
   - it: renders the configured Deployment replicas
     template: templates/workloads/deployment.yml
@@ -36,14 +35,13 @@ tests:
           path: spec.replicas
           value: 0
 
-  - it: defaults StatefulSet replicas to 1 when unset
+  - it: omits StatefulSet replicas when unset
     template: templates/workloads/statefulset.yml
     set:
       statefulSets.app.containers.main.image: nginx:1.27.5
     asserts:
-      - equal:
+      - notExists:
           path: spec.replicas
-          value: 1
 
   - it: renders the configured StatefulSet replicas
     template: templates/workloads/statefulset.yml
