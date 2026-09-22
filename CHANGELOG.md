@@ -1,6 +1,6 @@
 # Changelog
 
-## [3.2.2] - September 15, 2026
+## [3.2.2] - September 22, 2026
 ### Added
 * `hpas.<name>.behavior` is passed through to Kubernetes HPA `spec.behavior` (`autoscaling/v2` scale-up/scale-down stabilization windows and policies)
 
