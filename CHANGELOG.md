@@ -1,9 +1,8 @@
 # Changelog
 
-## [3.2.2] - September 21, 2026
-### Fixed
-* `Cronjob` template now renders `jobTemplate.metadata` for passed values
-
+## [3.2.2] - September 22, 2026
+### Added
+* `hpas.<name>.behavior` is passed through to Kubernetes HPA `spec.behavior` (`autoscaling/v2` scale-up/scale-down stabilization windows and policies)
 
 ## [3.2.1] - August 20, 2026
 ### Fixed

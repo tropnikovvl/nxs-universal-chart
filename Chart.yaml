@@ -24,10 +24,8 @@ annotations:
     - name: Source
       url: https://github.com/nixys/nxs-universal-chart
   artifacthub.io/changes: |
-    - kind: fixed
-      description: "defaultImageTag and container imageTag no longer fail values schema validation when the value is numeric (for example a fully numeric CI_COMMIT_SHORT_SHA): both now accept string, number and boolean values"
-    - kind: fixed
-      description: "Numeric image tags are rendered as plain strings instead of Go float notation (nginx:20250811 instead of nginx:2.0250811e+07)"
+    - kind: added
+      description: "HPA resources now render Kubernetes spec.behavior (scaleUp/scaleDown stabilization windows and policies) when hpas.<name>.behavior is set"
   artifacthub.io/recommendations: |
     - url: https://nixys.io
     - url: https://github.com/nixys/nxs-universal-chart

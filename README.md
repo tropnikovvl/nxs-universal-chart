@@ -628,6 +628,7 @@ All [Common Workload Entry Fields](#common-workload-entry-fields) and all [jobsG
 | `hpas.<name>.minReplicas` / `maxReplicas` | `minReplicas: 2`, `maxReplicas: 6` | `2` / `3` | Replica bounds for autoscaling. |
 | `hpas.<name>.targetCPU` / `targetMemory` | `targetCPU: 70` | `n/a` | Convenience CPU/memory utilization targets. |
 | `hpas.<name>.metrics` | `metrics: [{type: Pods, ...}]` | `n/a` | Custom metrics list; can be used with or without shortcuts. |
+| `hpas.<name>.behavior` | `behavior.scaleDown.stabilizationWindowSeconds: 300` | `n/a` | Optional Kubernetes HPA `spec.behavior` (scaleUp/scaleDown windows and policies). Omitted when unset. |
 
 ### Dependency Toggle Fields
 

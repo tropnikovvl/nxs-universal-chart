@@ -1284,6 +1284,9 @@
         "targetMemory": {},
         "metrics": {
           "$ref": "#/definitions/freeFormArray"
+        },
+        "behavior": {
+          "$ref": "#/definitions/freeFormObject"
         }
       }
     },
